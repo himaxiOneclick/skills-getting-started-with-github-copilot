@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
+      // Reset activity select (avoid duplicate entries on re-load)
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
+
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
@@ -20,15 +23,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-          <p><strong>Participants:</strong></p>
-          <ul>${details.participants.map(participant => `<li>${participant}</li>`).join('')}</ul>
-        `;
+        // Build content with a participants section
+        const title = document.createElement("h4");
+        title.textContent = name;
 
+        const desc = document.createElement("p");
+        desc.textContent = details.description;
+
+        const schedule = document.createElement("p");
+        schedule.innerHTML = `<strong>Schedule:</strong> ${details.schedule}`;
+
+        const availability = document.createElement("p");
+        availability.innerHTML = `<strong>Availability:</strong> ${spotsLeft} spots left`;
+
+        activityCard.appendChild(title);
+        activityCard.appendChild(desc);
+        activityCard.appendChild(schedule);
+        activityCard.appendChild(availability);
+
+        // Participants heading + list
+        const participantsHeading = document.createElement("p");
+        participantsHeading.innerHTML = "<strong>Participants:</strong>";
+        activityCard.appendChild(participantsHeading);
+
+        const participantsListEl = document.createElement("ul");
+        participantsListEl.className = "participants";
+
+        if (!details.participants || details.participants.length === 0) {
+          const empty = document.createElement("li");
+          empty.className = "participant-empty";
+          empty.textContent = "No participants yet";
+          participantsListEl.appendChild(empty);
+        } else {
+          details.participants.forEach((p) => {
+            const li = document.createElement("li");
+            const badge = document.createElement("span");
+            badge.className = "participant-badge";
+            badge.textContent = p;
+            li.appendChild(badge);
+            participantsListEl.appendChild(li);
+          });
+        }
+
+        activityCard.appendChild(participantsListEl);
         activitiesList.appendChild(activityCard);
 
         // Add option to select dropdown
